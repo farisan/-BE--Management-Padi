@@ -29,7 +29,7 @@ const options = {
       },
     ],
   },
-  apis: ['./src/routes/*.js'], // Path ke file route untuk membaca anotasi swagger
+  apis: [require('path').join(__dirname, '../routes/*.js')], // Path ke file route untuk membaca anotasi swagger
 };
 
 const swaggerSpec = swaggerJsdoc(options);
