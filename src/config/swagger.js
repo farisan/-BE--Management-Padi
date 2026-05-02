@@ -10,6 +10,10 @@ const options = {
     },
     servers: [
       {
+        url: 'https://be-management-padi.vercel.app',
+        description: 'Production server',
+      },
+      {
         url: 'http://localhost:5000',
         description: 'Development server',
       },
