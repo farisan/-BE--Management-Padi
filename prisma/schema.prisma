@@ -1,0 +1,102 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Pengguna {
+  id                   String                 @id @default(uuid())
+  name                 String
+  email                String                 @unique
+  password             String
+  role                 String                 // admin | petani | tengkulak
+  address              String?
+  isSuspended          Boolean                @default(false) @map("is_suspended")
+  createdAt            DateTime               @default(now()) @map("created_at")
+  updatedAt            DateTime               @updatedAt @map("updated_at")
+
+  penanamanPadi        PenanamanPadi[]
+  pengajuanPenjualanAsPetani PengajuanPenjualan[] @relation("PetaniPengajuan")
+  pengajuanPenjualanAsTengkulak PengajuanPenjualan[] @relation("TengkulakPengajuan")
+  persetujuan          Persetujuan[]
+
+  @@map("pengguna")
+}
+
+model PenanamanPadi {
+  id              String       @id @default(uuid())
+  petaniId        String       @map("petani_id")
+  petani          Pengguna     @relation(fields: [petaniId], references: [id])
+  tanggalTebar    DateTime     @map("tanggal_tebar") @db.Date
+  estimasiPanen   DateTime     @map("estimasi_panen") @db.Date
+  luasLahan       Float        @map("luas_lahan")
+  jenisPadi       String       @map("jenis_padi")
+  status          String       // proses | panen
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  panenPadi       PanenPadi[]
+
+  @@map("penanaman_padi")
+}
+
+model PanenPadi {
+  id              String       @id @default(uuid())
+  penanamanId     String       @map("penanaman_id")
+  penanaman       PenanamanPadi @relation(fields: [penanamanId], references: [id])
+  tanggalPanen    DateTime     @map("tanggal_panen") @db.Date
+  jumlahPanen     Float        @map("jumlah_panen")
+  kualitas        String
+  createdAt       DateTime     @default(now()) @map("created_at")
+
+  pengajuanPenjualan PengajuanPenjualan[]
+
+  @@map("panen_padi")
+}
+
+model PengajuanPenjualan {
+  id              String       @id @default(uuid())
+  panenId         String       @map("panen_id")
+  panen           PanenPadi    @relation(fields: [panenId], references: [id])
+  petaniId        String       @map("petani_id")
+  petani          Pengguna     @relation("PetaniPengajuan", fields: [petaniId], references: [id])
+  tengkulakId     String       @map("tengkulak_id")
+  tengkulak       Pengguna     @relation("TengkulakPengajuan", fields: [tengkulakId], references: [id])
+  hargaTawaran    Float        @map("harga_tawaran")
+  status          String       // pending | dilihat | ditolak | disetujui
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  persetujuan          Persetujuan[]
+  transaksiPenjualan   TransaksiPenjualan[]
+
+  @@map("pengajuan_penjualan")
+}
+
+model Persetujuan {
+  id              String       @id @default(uuid())
+  pengajuanId     String       @map("pengajuan_id")
+  pengajuan       PengajuanPenjualan @relation(fields: [pengajuanId], references: [id])
+  tengkulakId     String       @map("tengkulak_id")
+  tengkulak       Pengguna     @relation(fields: [tengkulakId], references: [id])
+  status          String       // reject | approve
+  catatan         String?
+  approvedAt      DateTime?    @map("approved_at")
+
+  @@map("persetujuan")
+}
+
+model TransaksiPenjualan {
+  id               String       @id @default(uuid())
+  pengajuanId      String       @map("pengajuan_id")
+  pengajuan        PengajuanPenjualan @relation(fields: [pengajuanId], references: [id])
+  hargaDeal        Float        @map("harga_deal")
+  totalBerat       Float        @map("total_berat")
+  totalHarga       Float        @map("total_harga")
+  tanggalTransaksi DateTime     @default(now()) @map("tanggal_transaksi")
+
+  @@map("transaksi_penjualan")
+}

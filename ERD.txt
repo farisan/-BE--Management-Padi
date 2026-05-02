@@ -1,0 +1,60 @@
+Table pengguna {
+  id uuid [pk]
+  name varchar
+  email varchar [unique]
+  password varchar
+  role varchar // admin | petani | tengkulak
+  address text
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table penanaman_padi {
+  id uuid [pk]
+  petani_id uuid [ref: > pengguna.id]
+  tanggal_tebar date
+  estimasi_panen date
+  luas_lahan float
+  jenis_padi varchar
+  status varchar // proses | panen
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table panen_padi {
+  id uuid [pk]
+  penanaman_id uuid [ref: > penanaman_padi.id]
+  tanggal_panen date
+  jumlah_panen float
+  kualitas varchar
+  created_at timestamp
+}
+
+Table pengajuan_penjualan {
+  id uuid [pk]
+  panen_id uuid [ref: > panen_padi.id]
+  petani_id uuid [ref: > pengguna.id]
+  tengkulak_id uuid [ref: > pengguna.id]
+  harga_tawaran float
+  status varchar // pending | dilihat | ditolak | disetujui
+  created_at timestamp
+  updated_at timestamp
+}
+
+Table persetujuan {
+  id uuid [pk]
+  pengajuan_id uuid [ref: > pengajuan_penjualan.id]
+  tengkulak_id uuid [ref: > pengguna.id]
+  status varchar // reject | approve
+  catatan text
+  approved_at timestamp
+}
+
+Table transaksi_penjualan {
+  id uuid [pk]
+  pengajuan_id uuid [ref: > pengajuan_penjualan.id]
+  harga_deal float
+  total_berat float
+  total_harga float
+  tanggal_transaksi timestamp
+}
