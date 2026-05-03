@@ -9,95 +9,96 @@ datasource db {
 }
 
 model Pengguna {
-  id                   String                 @id @default(uuid())
-  name                 String
-  email                String                 @unique
-  password             String
-  role                 String                 // admin | petani | tengkulak
-  address              String?
-  isSuspended          Boolean                @default(false) @map("is_suspended")
-  createdAt            DateTime               @default(now()) @map("created_at")
-  updatedAt            DateTime               @updatedAt @map("updated_at")
-
-  penanamanPadi        PenanamanPadi[]
-  pengajuanPenjualanAsPetani PengajuanPenjualan[] @relation("PetaniPengajuan")
+  id                            String               @id @default(uuid())
+  name                          String
+  email                         String               @unique
+  password                      String
+  role                          String
+  address                       String?
+  createdAt                     DateTime             @default(now()) @map("created_at")
+  updatedAt                     DateTime             @updatedAt @map("updated_at")
+  isSuspended                   Boolean              @default(false) @map("is_suspended")
+  penanamanPadi                 PenanamanPadi[]
+  pengajuanPenjualanAsPetani    PengajuanPenjualan[] @relation("PetaniPengajuan")
   pengajuanPenjualanAsTengkulak PengajuanPenjualan[] @relation("TengkulakPengajuan")
-  persetujuan          Persetujuan[]
+  persetujuan                   Persetujuan[]
 
   @@map("pengguna")
 }
 
 model PenanamanPadi {
-  id              String       @id @default(uuid())
-  petaniId        String       @map("petani_id")
-  petani          Pengguna     @relation(fields: [petaniId], references: [id])
-  tanggalTebar    DateTime     @map("tanggal_tebar") @db.Date
-  estimasiPanen   DateTime     @map("estimasi_panen") @db.Date
-  luasLahan       Float        @map("luas_lahan")
-  jenisPadi       String       @map("jenis_padi")
-  status          String       // proses | panen
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
-
-  panenPadi       PanenPadi[]
+  id            String      @id @default(uuid())
+  petaniId      String      @map("petani_id")
+  tanggalTebar  DateTime    @map("tanggal_tebar") @db.Date
+  estimasiPanen DateTime    @map("estimasi_panen") @db.Date
+  luasLahan     Float       @map("luas_lahan")
+  jenisPadi     String      @map("jenis_padi")
+  status        String
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+  panenPadi     PanenPadi[]
+  petani        Pengguna    @relation(fields: [petaniId], references: [id])
 
   @@map("penanaman_padi")
 }
 
 model PanenPadi {
-  id              String       @id @default(uuid())
-  penanamanId     String       @map("penanaman_id")
-  penanaman       PenanamanPadi @relation(fields: [penanamanId], references: [id])
-  tanggalPanen    DateTime     @map("tanggal_panen") @db.Date
-  jumlahPanen     Float        @map("jumlah_panen")
-  kualitas        String
-  createdAt       DateTime     @default(now()) @map("created_at")
-
+  id                 String               @id @default(uuid())
+  penanamanId        String               @map("penanaman_id")
+  tanggalPanen       DateTime             @map("tanggal_panen") @db.Date
+  jumlahPanen        Float                @map("jumlah_panen")
+  kualitas           String
+  createdAt          DateTime             @default(now()) @map("created_at")
+  penanaman          PenanamanPadi        @relation(fields: [penanamanId], references: [id])
   pengajuanPenjualan PengajuanPenjualan[]
 
   @@map("panen_padi")
 }
 
 model PengajuanPenjualan {
-  id              String       @id @default(uuid())
-  panenId         String       @map("panen_id")
-  panen           PanenPadi    @relation(fields: [panenId], references: [id])
-  petaniId        String       @map("petani_id")
-  petani          Pengguna     @relation("PetaniPengajuan", fields: [petaniId], references: [id])
-  tengkulakId     String       @map("tengkulak_id")
-  tengkulak       Pengguna     @relation("TengkulakPengajuan", fields: [tengkulakId], references: [id])
-  hargaTawaran    Float        @map("harga_tawaran")
-  status          String       // pending | dilihat | ditolak | disetujui
-  createdAt       DateTime     @default(now()) @map("created_at")
-  updatedAt       DateTime     @updatedAt @map("updated_at")
-
-  persetujuan          Persetujuan[]
-  transaksiPenjualan   TransaksiPenjualan[]
+  id                 String               @id @default(uuid())
+  panenId            String               @map("panen_id")
+  petaniId           String               @map("petani_id")
+  tengkulakId        String               @map("tengkulak_id")
+  hargaTawaran       Float                @map("harga_tawaran")
+  status             String
+  createdAt          DateTime             @default(now()) @map("created_at")
+  updatedAt          DateTime             @updatedAt @map("updated_at")
+  panen              PanenPadi            @relation(fields: [panenId], references: [id])
+  petani             Pengguna             @relation("PetaniPengajuan", fields: [petaniId], references: [id])
+  tengkulak          Pengguna             @relation("TengkulakPengajuan", fields: [tengkulakId], references: [id])
+  persetujuan        Persetujuan[]
+  transaksiPenjualan TransaksiPenjualan[]
 
   @@map("pengajuan_penjualan")
 }
 
 model Persetujuan {
-  id              String       @id @default(uuid())
-  pengajuanId     String       @map("pengajuan_id")
-  pengajuan       PengajuanPenjualan @relation(fields: [pengajuanId], references: [id])
-  tengkulakId     String       @map("tengkulak_id")
-  tengkulak       Pengguna     @relation(fields: [tengkulakId], references: [id])
-  status          String       // reject | approve
-  catatan         String?
-  approvedAt      DateTime?    @map("approved_at")
+  id          String             @id @default(uuid())
+  pengajuanId String             @map("pengajuan_id")
+  tengkulakId String             @map("tengkulak_id")
+  status      String
+  catatan     String?
+  approvedAt  DateTime?          @map("approved_at")
+  pengajuan   PengajuanPenjualan @relation(fields: [pengajuanId], references: [id])
+  tengkulak   Pengguna           @relation(fields: [tengkulakId], references: [id])
 
   @@map("persetujuan")
 }
 
 model TransaksiPenjualan {
-  id               String       @id @default(uuid())
-  pengajuanId      String       @map("pengajuan_id")
+  id               String             @id @default(uuid())
+  pengajuanId      String             @map("pengajuan_id")
+  hargaDeal        Float              @map("harga_deal")
+  totalBerat       Float              @map("total_berat")
+  totalHarga       Float              @map("total_harga")
+  tanggalTransaksi DateTime           @default(now()) @map("tanggal_transaksi")
   pengajuan        PengajuanPenjualan @relation(fields: [pengajuanId], references: [id])
-  hargaDeal        Float        @map("harga_deal")
-  totalBerat       Float        @map("total_berat")
-  totalHarga       Float        @map("total_harga")
-  tanggalTransaksi DateTime     @default(now()) @map("tanggal_transaksi")
 
   @@map("transaksi_penjualan")
 }
+
+/// We could not retrieve columns for the underlying table. Either it has none or you are missing rights to see them. Please check your privileges.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+// model management_padi_ddl {
+// }
