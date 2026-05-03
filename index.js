@@ -27,9 +27,7 @@ const transaksiRoutes = require('./src/routes/transaksiRoutes');
 
 // Basic route
 app.get('/', (req, res) => {
-  console.log(process.env.DATABASE_URL);
-  console.log(process.env.DIRECT_URL);
-  res.json({ message: 'Welcome to Management Padi API' });
+  res.json({ message: `Welcome to Management Padi API ${process.env.DATABASE_URL} ${process.env.DIRECT_URL}` });
 });
 
 app.use('/api/auth', authRoutes);
