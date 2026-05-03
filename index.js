@@ -1,14 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-const serverless = require('serverless-http');
 
 const app = express();
+const port = process.env.PORT || 5000;
 
-// Swagger
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./src/config/swagger');
 
+// Setup Swagger UI
 const CSS_URL = "https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/4.1.0/swagger-ui.min.css";
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { customCssUrl: CSS_URL }));
 
@@ -27,21 +27,7 @@ const transaksiRoutes = require('./src/routes/transaksiRoutes');
 
 // Basic route
 app.get('/', (req, res) => {
-  res.json({
-    message: "Welcome to Management Padi API"
-  });
-});
-const { PrismaClient } = require('@prisma/client');
-const prisma = new PrismaClient();
-
-app.get('/api/health', async (req, res) => {
-  try {
-    await prisma.$queryRaw`SELECT 1`;
-    res.json({ status: 'DB CONNECTED' });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: 'DB ERROR', detail: err.message });
-  }
+  res.json({ message: `Welcome to Management Padi API ${process.env.DATABASE_URL} ${process.env.DIRECT_URL}` });
 });
 
 app.use('/api/auth', authRoutes);
@@ -51,6 +37,11 @@ app.use('/api/panen', panenRoutes);
 app.use('/api/pengajuan', pengajuanRoutes);
 app.use('/api/transaksi', transaksiRoutes);
 
-// ❌ HAPUS app.listen
-// ✅ export handler
-module.exports = serverless(app);
+// Start server
+// if (process.env.NODE_ENV !== 'production') {
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+// }
+
+module.exports = app;
